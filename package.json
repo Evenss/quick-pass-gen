@@ -1,0 +1,11 @@
+{
+  "name": "quick-pass-gen",
+  "version": "0.1.0",
+  "description": "快密生成器 Chrome 扩展",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "pack:chrome": "node scripts/pack-chrome.js"
+  },
+  "devDependencies": {}
+}
