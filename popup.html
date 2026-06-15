@@ -19,9 +19,9 @@
     <section class="settings" aria-label="密码设置">
       <div class="length-row">
         <label for="length">密码长度</label>
-        <output id="lengthValue" for="length">16</output>
+        <input id="lengthValue" class="length-input" type="number" min="8" max="32" value="16" inputmode="numeric" aria-label="密码长度数值">
       </div>
-      <input id="length" type="range" min="8" max="64" value="16">
+      <input id="length" type="range" min="8" max="32" value="16">
 
       <div class="option-grid">
         <label><input id="uppercase" type="checkbox" checked> 大写字母</label>
