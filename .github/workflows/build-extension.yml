@@ -1,0 +1,36 @@
+name: Build Chrome Extension
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Test and package extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build Chrome extension zip
+        run: npm run pack:chrome
+
+      - name: Upload packaged extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: quick-pass-gen-chrome-extension
+          path: dist/quick-pass-gen.zip
+          if-no-files-found: error
