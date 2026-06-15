@@ -4,13 +4,19 @@
   "description": "一款简洁安全的随机密码生成器，支持自定义长度、字符类型和一键复制。",
   "version": "0.1.0",
   "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
     "default_popup": "popup.html",
     "default_title": "快密生成器"
   },
   "permissions": ["storage"],
   "icons": {
-    "16": "icons/icon16.svg",
-    "48": "icons/icon48.svg",
-    "128": "icons/icon128.svg"
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   }
 }

@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="28" fill="#0f172a"/>
-  <path d="M40 58V45c0-13.25 10.75-24 24-24s24 10.75 24 24v13" fill="none" stroke="#38bdf8" stroke-width="12" stroke-linecap="round"/>
-  <rect x="28" y="54" width="72" height="54" rx="14" fill="#22c55e"/>
-  <text x="64" y="89" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#04111d">密</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" role="img" aria-label="快密生成器图标">
+  <rect width="16" height="16" rx="3.5" fill="#050505"/>
+  <path d="M5 8V6.5C5 4.8 6.3 3.6 8 3.6s3 1.2 3 2.9V8" fill="none" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round"/>
+  <rect x="4" y="7.2" width="8" height="5.3" rx="1.4" fill="#ffffff"/>
+  <circle cx="8" cy="9.5" r="1" fill="#050505"/>
 </svg>

@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, calculateStrength, generatePassword, normalizeConfig } from './password.js';
+import { DEFAULT_CONFIG, PASSWORD_LIMITS, calculateStrength, clampLength, generatePassword, normalizeConfig } from './password.js';
 
 const fields = {
   length: document.querySelector('#length'),
@@ -29,12 +29,52 @@ async function init() {
 }
 
 function bindEvents() {
-  ['length', 'uppercase', 'lowercase', 'numbers', 'symbols', 'excludeAmbiguous'].forEach((name) => {
+  fields.length.addEventListener('input', handleRangeLengthInput);
+  fields.lengthValue.addEventListener('input', handleNumberLengthInput);
+  fields.lengthValue.addEventListener('change', handleNumberLengthCommit);
+  fields.lengthValue.addEventListener('blur', handleNumberLengthCommit);
+  ['uppercase', 'lowercase', 'numbers', 'symbols', 'excludeAmbiguous'].forEach((name) => {
     fields[name].addEventListener('input', handleConfigChange);
   });
-  fields.generate.addEventListener('click', refreshPassword);
+  fields.generate.addEventListener('click', handleGenerateClick);
   fields.copy.addEventListener('click', copyPassword);
   fields.password.addEventListener('focus', () => fields.password.select());
+}
+
+function handleRangeLengthInput() {
+  fields.lengthValue.value = fields.length.value;
+  handleConfigChange.call(fields.length);
+}
+
+function handleNumberLengthInput() {
+  const value = Number.parseInt(fields.lengthValue.value, 10);
+  if (Number.isNaN(value) || value < PASSWORD_LIMITS.min) return;
+  if (value > PASSWORD_LIMITS.max) {
+    fields.lengthValue.value = PASSWORD_LIMITS.max;
+    fields.length.value = PASSWORD_LIMITS.max;
+    handleConfigChange.call(fields.lengthValue);
+    return;
+  }
+  fields.length.value = value;
+  handleConfigChange.call(fields.lengthValue);
+}
+
+function handleNumberLengthCommit() {
+  commitLengthInput();
+  handleConfigChange.call(fields.lengthValue);
+}
+
+async function handleGenerateClick() {
+  commitLengthInput();
+  currentConfig = readConfigFromForm();
+  await saveConfig(currentConfig);
+  refreshPassword();
+}
+
+function commitLengthInput() {
+  const length = clampLength(fields.lengthValue.value || fields.length.value);
+  fields.length.value = length;
+  fields.lengthValue.value = length;
 }
 
 async function handleConfigChange() {
@@ -71,7 +111,7 @@ async function copyPassword() {
 
 function readConfigFromForm() {
   return normalizeConfig({
-    length: fields.length.value,
+    length: fields.lengthValue.value || fields.length.value,
     uppercase: fields.uppercase.checked,
     lowercase: fields.lowercase.checked,
     numbers: fields.numbers.checked,

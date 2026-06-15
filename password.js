@@ -7,16 +7,17 @@ export const DEFAULT_CONFIG = Object.freeze({
   excludeAmbiguous: false,
 });
 
-export const PASSWORD_LIMITS = Object.freeze({ min: 8, max: 64 });
+export const PASSWORD_LIMITS = Object.freeze({ min: 8, max: 32 });
 
 export const CHARACTER_SETS = Object.freeze({
   uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
   lowercase: 'abcdefghijklmnopqrstuvwxyz',
   numbers: '0123456789',
-  symbols: '!@#$%^&*_-+=',
+  symbols: '!@#$%&*',
 });
 
 const AMBIGUOUS_CHARACTERS = new Set(['0', 'O', 'o', '1', 'l', 'I']);
+const LEADING_CHARACTER_KEYS = ['uppercase', 'lowercase'];
 
 export function clampLength(length) {
   const parsed = Number.parseInt(length, 10);
@@ -71,8 +72,26 @@ export function generatePassword(config = {}, randomBytes = secureRandomBytes) {
   const pool = activeSets.map((set) => set.value).join('');
   const remainingLength = normalized.length - requiredCharacters.length;
   const remainingCharacters = Array.from({ length: remainingLength }, () => pickRandomCharacter(pool, randomBytes));
+  const shuffledCharacters = shuffleCharacters([...requiredCharacters, ...remainingCharacters], randomBytes);
 
-  return shuffleCharacters([...requiredCharacters, ...remainingCharacters], randomBytes).join('');
+  return moveAllowedLeadingCharacterToFront(shuffledCharacters, activeSets).join('');
+}
+
+function moveAllowedLeadingCharacterToFront(characters, activeSets) {
+  const leadingCharacters = new Set(
+    activeSets
+      .filter((set) => LEADING_CHARACTER_KEYS.includes(set.key))
+      .flatMap((set) => [...set.value]),
+  );
+
+  if (leadingCharacters.size === 0 || leadingCharacters.has(characters[0])) return characters;
+
+  const leadingIndex = characters.findIndex((character) => leadingCharacters.has(character));
+  if (leadingIndex <= 0) return characters;
+
+  const adjusted = [...characters];
+  [adjusted[0], adjusted[leadingIndex]] = [adjusted[leadingIndex], adjusted[0]];
+  return adjusted;
 }
 
 function filterAmbiguous(value, shouldExclude) {
