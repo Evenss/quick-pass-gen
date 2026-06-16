@@ -2,6 +2,8 @@
 
 Quick Pass Gen is a local-first Chrome random password generator extension for quickly creating strong passwords.
 
+中文说明见下方 [中文](#中文)。
+
 ### What it does
 
 - Customize password length from 8 to 32 characters.
