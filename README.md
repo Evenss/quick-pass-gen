@@ -1,3 +1,4 @@
+
 # Quick Pass Gen
 
 Quick Pass Gen is a local-first Chrome random password generator extension for quickly creating strong passwords.
@@ -39,9 +40,11 @@ This project is licensed under the [MIT License](./LICENSE).
 
 ---
 
+# 快密生成器
+
 ## 中文
 
-密码生成器是一款本地优先的 Chrome 随机密码生成器扩展，用来快速生成强随机密码。
+快密生成器是一款本地优先的 Chrome 随机密码生成器扩展，用来快速生成强随机密码。
 
 ### 能做什么
 
@@ -52,6 +55,7 @@ This project is licensed under the [MIT License](./LICENSE).
 - 一键复制生成的密码。
 - 仅在本地保存偏好设置，不保存密码历史，也不上传任何数据。
 
+
 ### 加载到 Google Chrome
 
 1. 下载或克隆本项目到本地。
@@ -59,11 +63,11 @@ This project is licensed under the [MIT License](./LICENSE).
 3. 打开右上角“开发者模式”。
 4. 点击“加载已解压的扩展程序”。
 5. 选择本项目根目录（包含 `manifest.json` 的目录）。
-6. 点击浏览器工具栏中的“密码生成器”图标开始使用。
+6. 点击浏览器工具栏中的“快密生成器”图标开始使用。
 
 如果修改了代码，回到 `chrome://extensions/`，点击该扩展卡片上的“重新加载”即可生效。
 
-### 开发与打包
+## 开发与打包
 
 ```bash
 npm test
