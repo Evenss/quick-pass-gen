@@ -1,0 +1,32 @@
+name: Package Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run tests
+        run: npm test
+
+      - name: Package Chrome extension
+        run: npm run pack:chrome
+
+      - name: Upload zip to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/quick-pass-gen.zip
