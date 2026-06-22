@@ -12,15 +12,20 @@ const fields = {
   generate: document.querySelector('#generate'),
   copy: document.querySelector('#copy'),
   message: document.querySelector('#message'),
+  copyHistory: document.querySelector('#copyHistory'),
+  clearHistory: document.querySelector('#clearHistory'),
   strengthLabel: document.querySelector('#strengthLabel'),
   strengthBar: document.querySelector('#strengthBar'),
 };
 
 const STORAGE_KEY = 'quickPassGenConfig';
+const HISTORY_STORAGE_KEY = 'quickPassGenCopyHistory';
+const HISTORY_LIMIT = 10;
 const SAVE_CONFIG_DELAY = 250;
 let currentConfig = { ...DEFAULT_CONFIG };
 let saveConfigTimer;
 let hasUserEditedConfig = false;
+let copyHistory = [];
 
 init();
 
@@ -29,6 +34,7 @@ function init() {
   bindEvents();
   refreshPassword();
   loadStoredConfigAfterFirstPaint();
+  loadStoredHistoryAfterFirstPaint();
 }
 
 function bindEvents() {
@@ -41,6 +47,7 @@ function bindEvents() {
   });
   fields.generate.addEventListener('click', handleGenerateClick);
   fields.copy.addEventListener('click', copyPassword);
+  fields.clearHistory.addEventListener('click', clearCopyHistory);
   fields.password.addEventListener('focus', () => fields.password.select());
 }
 
@@ -111,9 +118,80 @@ function refreshPassword() {
 }
 
 async function copyPassword() {
-  if (!fields.password.value) return;
-  await navigator.clipboard.writeText(fields.password.value);
+  const password = fields.password.value;
+  if (!password) return;
+  await navigator.clipboard.writeText(password);
+  await addCopyHistoryItem(password);
   showMessage('已复制到剪贴板');
+}
+
+
+function renderCopyHistory() {
+  fields.copyHistory.replaceChildren(
+    ...copyHistory.map((item) => {
+      const historyItem = document.createElement('li');
+      const value = document.createElement('span');
+      const time = document.createElement('time');
+
+      value.className = 'history-value';
+      value.textContent = item.value;
+      time.className = 'history-time';
+      time.dateTime = item.copiedAt;
+      time.textContent = formatHistoryTime(item.copiedAt);
+
+      historyItem.append(value, time);
+      return historyItem;
+    }),
+  );
+}
+
+function formatHistoryTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '复制时间未知';
+  return date.toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+async function addCopyHistoryItem(value) {
+  copyHistory = [{ value, copiedAt: new Date().toISOString() }, ...copyHistory].slice(0, HISTORY_LIMIT);
+  renderCopyHistory();
+  await saveCopyHistory(copyHistory);
+}
+
+async function clearCopyHistory() {
+  copyHistory = [];
+  renderCopyHistory();
+  await saveCopyHistory(copyHistory);
+  showMessage('复制历史已清空');
+}
+
+function loadStoredHistoryAfterFirstPaint() {
+  requestAfterFirstPaint(async () => {
+    copyHistory = await loadCopyHistory();
+    renderCopyHistory();
+  });
+}
+
+async function loadCopyHistory() {
+  if (!globalThis.chrome?.storage?.local) return [];
+  const result = await chrome.storage.local.get(HISTORY_STORAGE_KEY);
+  return normalizeCopyHistory(result[HISTORY_STORAGE_KEY]);
+}
+
+function normalizeCopyHistory(history) {
+  if (!Array.isArray(history)) return [];
+  return history
+    .filter((item) => item && typeof item.value === 'string' && typeof item.copiedAt === 'string')
+    .slice(0, HISTORY_LIMIT);
+}
+
+async function saveCopyHistory(history) {
+  if (!globalThis.chrome?.storage?.local) return;
+  await chrome.storage.local.set({ [HISTORY_STORAGE_KEY]: normalizeCopyHistory(history) });
 }
 
 function readConfigFromForm() {

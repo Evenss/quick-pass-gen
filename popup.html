@@ -47,6 +47,15 @@
       </div>
       <p id="message" role="status"></p>
     </section>
+
+    <section class="history" aria-label="复制历史记录">
+      <div class="history-header">
+        <h2>复制历史</h2>
+        <button id="clearHistory" type="button" class="ghost">清空</button>
+      </div>
+      <ol id="copyHistory" class="history-list"></ol>
+      <p id="historyEmpty" class="history-empty">暂无复制记录</p>
+    </section>
   </main>
   <script type="module" src="popup.js"></script>
 </body>
