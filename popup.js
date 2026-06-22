@@ -17,15 +17,18 @@ const fields = {
 };
 
 const STORAGE_KEY = 'quickPassGenConfig';
+const SAVE_CONFIG_DELAY = 250;
 let currentConfig = { ...DEFAULT_CONFIG };
+let saveConfigTimer;
+let hasUserEditedConfig = false;
 
 init();
 
-async function init() {
-  currentConfig = await loadConfig();
+function init() {
   renderConfig(currentConfig);
   bindEvents();
   refreshPassword();
+  loadStoredConfigAfterFirstPaint();
 }
 
 function bindEvents() {
@@ -60,24 +63,28 @@ function handleNumberLengthInput() {
 }
 
 function handleNumberLengthCommit() {
-  commitLengthInput();
+  const previousLength = currentConfig.length;
+  const committedLength = commitLengthInput();
+  if (committedLength === previousLength) return;
   handleConfigChange.call(fields.lengthValue);
 }
 
 async function handleGenerateClick() {
   commitLengthInput();
   currentConfig = readConfigFromForm();
-  await saveConfig(currentConfig);
   refreshPassword();
+  await saveConfig(currentConfig);
 }
 
 function commitLengthInput() {
   const length = clampLength(fields.lengthValue.value || fields.length.value);
   fields.length.value = length;
   fields.lengthValue.value = length;
+  return length;
 }
 
-async function handleConfigChange() {
+function handleConfigChange() {
+  hasUserEditedConfig = true;
   currentConfig = readConfigFromForm();
   if (!hasActiveType(currentConfig)) {
     currentConfig[this.id] = true;
@@ -87,8 +94,8 @@ async function handleConfigChange() {
   }
 
   renderConfig(currentConfig);
-  await saveConfig(currentConfig);
   refreshPassword();
+  scheduleSaveConfig(currentConfig);
 }
 
 function refreshPassword() {
@@ -145,10 +152,51 @@ function hasActiveType(config) {
   return config.uppercase || config.lowercase || config.numbers || config.symbols;
 }
 
+function loadStoredConfigAfterFirstPaint() {
+  const loadStoredConfig = async () => {
+    const storedConfig = await loadConfig();
+    if (hasUserEditedConfig) return;
+    currentConfig = storedConfig;
+    renderConfig(storedConfig);
+    refreshPassword();
+  };
+
+  requestAfterFirstPaint(loadStoredConfig);
+}
+
+function requestAfterFirstPaint(callback) {
+  const afterNextFrame = globalThis.requestAnimationFrame ?? ((handler) => setTimeout(handler, 0));
+
+  afterNextFrame(() => {
+    const run = () => {
+      callback().catch((error) => {
+        console.error('Failed to load quick-pass-gen config:', error);
+      });
+    };
+
+    if ('requestIdleCallback' in globalThis) {
+      globalThis.requestIdleCallback(run, { timeout: 500 });
+      return;
+    }
+
+    setTimeout(run, 0);
+  });
+}
+
 async function loadConfig() {
   if (!globalThis.chrome?.storage?.local) return { ...DEFAULT_CONFIG };
   const result = await chrome.storage.local.get(STORAGE_KEY);
   return normalizeConfig(result[STORAGE_KEY] ?? DEFAULT_CONFIG);
+}
+
+function scheduleSaveConfig(config) {
+  clearTimeout(saveConfigTimer);
+  const configToSave = normalizeConfig(config);
+  saveConfigTimer = setTimeout(() => {
+    saveConfig(configToSave).catch((error) => {
+      console.error('Failed to save quick-pass-gen config:', error);
+    });
+  }, SAVE_CONFIG_DELAY);
 }
 
 async function saveConfig(config) {
