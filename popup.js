@@ -151,7 +151,7 @@ async function fillPassword() {
       return;
     }
 
-    await addHistoryItem(password, 'fill');
+    await addHistoryItem(password, 'fill', tab.url);
     showMessage('已自动填充到页面');
   } catch (error) {
     console.error('Failed to autofill quick-pass-gen password:', error);
@@ -164,21 +164,31 @@ function renderCopyHistory() {
     ...copyHistory.map((item) => {
       const historyItem = document.createElement('li');
       const value = document.createElement('span');
+      const details = document.createElement('div');
       const meta = document.createElement('div');
       const action = document.createElement('span');
       const time = document.createElement('time');
+      const url = document.createElement('span');
 
       value.className = 'history-value';
       value.textContent = item.value;
+      details.className = 'history-details';
       meta.className = 'history-meta';
       action.className = `history-action history-action-${item.action}`;
       action.textContent = formatHistoryAction(item.action);
       time.className = 'history-time';
       time.dateTime = item.copiedAt;
       time.textContent = formatHistoryTime(item.copiedAt);
+      url.className = 'history-url';
+      url.textContent = formatHistoryUrl(item);
+      url.title = item.url || '';
 
       meta.append(action, time);
-      historyItem.append(value, meta);
+      details.append(value);
+      if (url.textContent) {
+        details.append(url);
+      }
+      historyItem.append(meta, details);
       return historyItem;
     }),
   );
@@ -186,6 +196,11 @@ function renderCopyHistory() {
 
 function formatHistoryAction(action) {
   return action === 'fill' ? '自动填充' : '复制';
+}
+
+function formatHistoryUrl(item) {
+  if (item.action !== 'fill') return '';
+  return item.url || '自动填充网址未知';
 }
 
 function formatHistoryTime(value) {
@@ -199,8 +214,8 @@ function formatHistoryTime(value) {
   });
 }
 
-async function addHistoryItem(value, action = 'copy') {
-  copyHistory = [{ value, action, copiedAt: new Date().toISOString() }, ...copyHistory].slice(0, HISTORY_LIMIT);
+async function addHistoryItem(value, action = 'copy', url = '') {
+  copyHistory = [{ value, action, url: normalizeHistoryUrl(url), copiedAt: new Date().toISOString() }, ...copyHistory].slice(0, HISTORY_LIMIT);
   renderCopyHistory();
   await saveCopyHistory(copyHistory);
 }
@@ -233,8 +248,13 @@ function normalizeCopyHistory(history) {
       value: item.value,
       copiedAt: item.copiedAt,
       action: item.action === 'fill' ? 'fill' : 'copy',
+      url: normalizeHistoryUrl(item.url),
     }))
     .slice(0, HISTORY_LIMIT);
+}
+
+function normalizeHistoryUrl(url) {
+  return typeof url === 'string' ? url.trim() : '';
 }
 
 async function saveCopyHistory(history) {
