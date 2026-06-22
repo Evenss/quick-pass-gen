@@ -17,7 +17,7 @@ body {
 
 .card {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   padding: 0;
 }
 
@@ -48,7 +48,7 @@ input[type="range"] { accent-color: #ffffff; width: 100%; }
 }
 input[type="checkbox"] { accent-color: #ffffff; }
 
-.result { display: grid; gap: 10px; }
+.result { display: grid; gap: 8px; }
 textarea {
   width: 100%;
   resize: none;
@@ -70,16 +70,15 @@ button {
   font-weight: 700;
 }
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.actions .primary { grid-column: 1 / -1; }
 button.primary { border-color: #ffffff; background: #ffffff; color: #050505; }
 button:hover { transform: translateY(-1px); }
-#message { min-height: 18px; margin: 0; color: #d4d4d4; font-size: 12px; text-align: right; }
+#message { min-height: 12px; margin: 0; color: #d4d4d4; font-size: 12px; text-align: right; }
 
 
 .history {
   display: grid;
   gap: 10px;
-  padding-top: 2px;
+  padding-top: 0;
 }
 .history-header h2 {
   margin: 0;
