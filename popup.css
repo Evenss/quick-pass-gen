@@ -21,13 +21,12 @@ body {
   padding: 0;
 }
 
-.header, .length-row, .strength div, .actions, .history-header { display: flex; align-items: center; justify-content: space-between; }
+.header, .length-row, .history-header { display: flex; align-items: center; justify-content: space-between; }
 h1 { margin: 2px 0 0; font-size: 24px; }
-.eyebrow { margin: 0; color: #a3a3a3; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
 .badge { padding: 6px 10px; border-radius: 999px; background: #ffffff; color: #050505; font-size: 12px; font-weight: 700; }
 
 .settings { display: grid; gap: 14px; }
-label, .length-input, .strength span, .result label { color: #d4d4d4; font-size: 13px; }
+label, .length-input, .result label { color: #d4d4d4; font-size: 13px; }
 .length-input {
   width: 56px;
   padding: 5px 8px;
@@ -48,11 +47,6 @@ input[type="range"] { accent-color: #ffffff; width: 100%; }
   background: #181818;
 }
 input[type="checkbox"] { accent-color: #ffffff; }
-
-.strength { display: grid; gap: 8px; }
-.strength strong { color: #ffffff; font-size: 14px; }
-.strength-bar { height: 9px; overflow: hidden; border-radius: 999px; background: #303030; }
-.strength-bar span { display: block; height: 100%; width: 100%; border-radius: inherit; background: #ffffff; transition: width 160ms ease; }
 
 .result { display: grid; gap: 10px; }
 textarea {
@@ -75,6 +69,8 @@ button {
   cursor: pointer;
   font-weight: 700;
 }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.actions .primary { grid-column: 1 / -1; }
 button.primary { border-color: #ffffff; background: #ffffff; color: #050505; }
 button:hover { transform: translateY(-1px); }
 #message { min-height: 18px; margin: 0; color: #d4d4d4; font-size: 12px; text-align: right; }
@@ -108,7 +104,7 @@ button.ghost {
 }
 .history-list li {
   display: grid;
-  gap: 4px;
+  gap: 6px;
   padding: 10px;
   border: 1px solid #303030;
   border-radius: 8px;
@@ -119,9 +115,30 @@ button.ghost {
   color: #ffffff;
   font: 700 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
+.history-url {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: #a3a3a3;
+  font-size: 11px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.history-meta { display: grid; justify-items: end; gap: 3px; }
+.history-action {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #262626;
+  color: #e5e5e5;
+  font-size: 11px;
+  font-weight: 700;
+}
+.history-action-fill { background: #ffffff; color: #050505; }
 .history-time {
   color: #a3a3a3;
   font-size: 11px;
+  line-height: 1.4;
 }
 .history-empty {
   margin: 0;
