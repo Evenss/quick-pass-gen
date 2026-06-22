@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, PASSWORD_LIMITS, calculateStrength, clampLength, generatePassword, normalizeConfig } from './password.js';
+import { DEFAULT_CONFIG, PASSWORD_LIMITS, clampLength, generatePassword, normalizeConfig } from './password.js';
 
 const fields = {
   length: document.querySelector('#length'),
@@ -11,11 +11,10 @@ const fields = {
   password: document.querySelector('#password'),
   generate: document.querySelector('#generate'),
   copy: document.querySelector('#copy'),
+  fill: document.querySelector('#fill'),
   message: document.querySelector('#message'),
   copyHistory: document.querySelector('#copyHistory'),
   clearHistory: document.querySelector('#clearHistory'),
-  strengthLabel: document.querySelector('#strengthLabel'),
-  strengthBar: document.querySelector('#strengthBar'),
 };
 
 const STORAGE_KEY = 'quickPassGenConfig';
@@ -47,6 +46,7 @@ function bindEvents() {
   });
   fields.generate.addEventListener('click', handleGenerateClick);
   fields.copy.addEventListener('click', copyPassword);
+  fields.fill.addEventListener('click', fillPassword);
   fields.clearHistory.addEventListener('click', clearCopyHistory);
   fields.password.addEventListener('focus', () => fields.password.select());
 }
@@ -109,7 +109,6 @@ function refreshPassword() {
   try {
     const password = generatePassword(currentConfig);
     fields.password.value = password;
-    updateStrength(currentConfig);
     showMessage('');
   } catch (error) {
     fields.password.value = '';
@@ -121,33 +120,77 @@ async function copyPassword() {
   const password = fields.password.value;
   if (!password) return;
   await navigator.clipboard.writeText(password);
-  await addCopyHistoryItem(password);
+  await addHistoryItem(password, 'copy');
   showMessage('已复制到剪贴板');
 }
 
+async function fillPassword() {
+  const password = fields.password.value;
+  if (!password) return;
+
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id) {
+      showMessage('未找到可填充的页面');
+      return;
+    }
+
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content-fill.js'],
+    });
+
+    const [{ result: fillResult } = {}] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (value) => fillQuickPassGenPassword(value),
+      args: [password],
+    });
+
+    if (!fillResult?.success) {
+      showMessage(fillResult?.message ?? '自动填充失败');
+      return;
+    }
+
+    await addHistoryItem(password, 'fill');
+    showMessage('已自动填充到页面');
+  } catch (error) {
+    console.error('Failed to autofill quick-pass-gen password:', error);
+    showMessage('自动填充失败，请确认当前页面允许扩展访问');
+  }
+}
 
 function renderCopyHistory() {
   fields.copyHistory.replaceChildren(
     ...copyHistory.map((item) => {
       const historyItem = document.createElement('li');
       const value = document.createElement('span');
+      const meta = document.createElement('div');
+      const action = document.createElement('span');
       const time = document.createElement('time');
 
       value.className = 'history-value';
       value.textContent = item.value;
+      meta.className = 'history-meta';
+      action.className = `history-action history-action-${item.action}`;
+      action.textContent = formatHistoryAction(item.action);
       time.className = 'history-time';
       time.dateTime = item.copiedAt;
       time.textContent = formatHistoryTime(item.copiedAt);
 
-      historyItem.append(value, time);
+      meta.append(action, time);
+      historyItem.append(value, meta);
       return historyItem;
     }),
   );
 }
 
+function formatHistoryAction(action) {
+  return action === 'fill' ? '自动填充' : '复制';
+}
+
 function formatHistoryTime(value) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '复制时间未知';
+  if (Number.isNaN(date.getTime())) return '使用时间未知';
   return date.toLocaleString('zh-CN', {
     month: '2-digit',
     day: '2-digit',
@@ -156,8 +199,8 @@ function formatHistoryTime(value) {
   });
 }
 
-async function addCopyHistoryItem(value) {
-  copyHistory = [{ value, copiedAt: new Date().toISOString() }, ...copyHistory].slice(0, HISTORY_LIMIT);
+async function addHistoryItem(value, action = 'copy') {
+  copyHistory = [{ value, action, copiedAt: new Date().toISOString() }, ...copyHistory].slice(0, HISTORY_LIMIT);
   renderCopyHistory();
   await saveCopyHistory(copyHistory);
 }
@@ -166,7 +209,7 @@ async function clearCopyHistory() {
   copyHistory = [];
   renderCopyHistory();
   await saveCopyHistory(copyHistory);
-  showMessage('复制历史已清空');
+  showMessage('使用历史已清空');
 }
 
 function loadStoredHistoryAfterFirstPaint() {
@@ -186,6 +229,11 @@ function normalizeCopyHistory(history) {
   if (!Array.isArray(history)) return [];
   return history
     .filter((item) => item && typeof item.value === 'string' && typeof item.copiedAt === 'string')
+    .map((item) => ({
+      value: item.value,
+      copiedAt: item.copiedAt,
+      action: item.action === 'fill' ? 'fill' : 'copy',
+    }))
     .slice(0, HISTORY_LIMIT);
 }
 
@@ -213,13 +261,6 @@ function renderConfig(config) {
   fields.numbers.checked = config.numbers;
   fields.symbols.checked = config.symbols;
   fields.excludeAmbiguous.checked = config.excludeAmbiguous;
-  updateStrength(config);
-}
-
-function updateStrength(config) {
-  const strength = calculateStrength(config);
-  fields.strengthLabel.textContent = strength.label;
-  fields.strengthBar.style.width = `${strength.level * 25}%`;
 }
 
 function showMessage(message) {
