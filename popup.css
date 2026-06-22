@@ -104,16 +104,30 @@ button.ghost {
 }
 .history-list li {
   display: grid;
-  gap: 4px;
+  gap: 7px;
   padding: 10px;
   border: 1px solid #303030;
   border-radius: 8px;
   background: #101010;
 }
+.history-details {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
 .history-value {
-  overflow-wrap: anywhere;
+  overflow: hidden;
   color: #ffffff;
   font: 700 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.history-url {
+  overflow: hidden;
+  color: #a3a3a3;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .history-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .history-action {
