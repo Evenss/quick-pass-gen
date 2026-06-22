@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "快密生成器",
-  "description": "一款简洁安全的随机密码生成器，支持自定义长度、字符类型和一键复制。",
+  "description": "一款简洁安全的随机密码生成器，支持在网页表单中快速生成并自动填充。",
   "version": "0.1.0",
   "action": {
     "default_icon": {
@@ -13,10 +13,25 @@
     "default_popup": "popup.html",
     "default_title": "快密生成器"
   },
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content-fill.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
 }
