@@ -46,7 +46,7 @@ function bindEvents() {
   });
   fields.generate.addEventListener('click', handleGenerateClick);
   fields.copy.addEventListener('click', copyPassword);
-  fields.fill.addEventListener('click', fillPassword);
+  fields.fill?.addEventListener('click', fillPassword);
   fields.clearHistory.addEventListener('click', clearCopyHistory);
   fields.password.addEventListener('focus', () => fields.password.select());
 }
