@@ -196,12 +196,20 @@
     return shuffle([...requiredChars, ...remainingChars]).join('');
   }
 
+  function getHistorySite() {
+    try {
+      return new URL(globalThis.location.href).hostname;
+    } catch {
+      return '';
+    }
+  }
+
   async function saveHistory(value) {
     if (!globalThis.chrome?.storage?.local) return;
     const result = await chrome.storage.local.get(HISTORY_STORAGE_KEY);
     const history = Array.isArray(result[HISTORY_STORAGE_KEY]) ? result[HISTORY_STORAGE_KEY] : [];
     const nextHistory = [
-      { value, action: 'fill', url: globalThis.location.href, copiedAt: new Date().toISOString() },
+      { value, action: 'fill', site: getHistorySite(), copiedAt: new Date().toISOString() },
       ...history,
     ].slice(0, HISTORY_LIMIT);
     await chrome.storage.local.set({ [HISTORY_STORAGE_KEY]: nextHistory });

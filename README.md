@@ -16,7 +16,7 @@ Quick Pass Gen is a local-first Chrome random password generator extension for q
 - Optionally exclude ambiguous characters such as `0 O o 1 l I`.
 - Show password strength automatically.
 - Copy the generated password with one click.
-- Store only preferences locally; password history is not saved or uploaded.
+- Save recent usage history locally so you can recover recently copied or filled passwords; autofill history records only the site domain, not the full URL or page content, and no data is uploaded.
 
 ### Load in Google Chrome
 
@@ -61,7 +61,7 @@ This project is licensed under the [MIT License](./LICENSE).
 - 可排除 `0 O o 1 l I` 等易混淆字符。
 - 自动显示密码强度。
 - 一键复制生成的密码。
-- 仅在本地保存偏好设置，不保存密码历史，也不上传任何数据。
+- 可在本地保存最近使用历史，方便找回近期复制或填充过的密码；自动填充历史只记录网站域名，不保存完整 URL 或页面内容，也不会上传任何数据。
 
 
 ### 加载到 Google Chrome
