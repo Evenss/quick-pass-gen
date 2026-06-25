@@ -7,33 +7,33 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <main class="card" aria-label="快密生成器">
+  <main id="app" class="card" aria-label="快密生成器">
     <header class="header">
       <div>
-        <h1>快密生成器</h1>
+        <h1 id="title">快密生成器</h1>
       </div>
-      <span class="badge">本地安全</span>
+      <button id="languageToggle" class="language-toggle" type="button" aria-label="Switch language to English">English</button>
     </header>
 
-    <section class="settings" aria-label="密码设置">
+    <section id="settings" class="settings" aria-label="密码设置">
       <div class="length-row">
-        <label for="length">密码长度</label>
+        <label id="lengthLabel" for="length">密码长度</label>
         <input id="lengthValue" class="length-input" type="number" min="8" max="32" value="16" inputmode="numeric" aria-label="密码长度数值">
       </div>
       <input id="length" type="range" min="8" max="32" value="16">
 
       <div class="option-grid">
-        <label><input id="uppercase" type="checkbox" checked> 大写字母</label>
-        <label><input id="lowercase" type="checkbox" checked> 小写字母</label>
-        <label><input id="numbers" type="checkbox" checked> 数字</label>
-        <label><input id="symbols" type="checkbox" checked> 特殊符号</label>
+        <label><input id="uppercase" type="checkbox" checked> <span id="uppercaseText">大写字母</span></label>
+        <label><input id="lowercase" type="checkbox" checked> <span id="lowercaseText">小写字母</span></label>
+        <label><input id="numbers" type="checkbox" checked> <span id="numbersText">数字</span></label>
+        <label><input id="symbols" type="checkbox" checked> <span id="symbolsText">特殊符号</span></label>
       </div>
 
-      <label class="wide-option"><input id="excludeAmbiguous" type="checkbox"> 排除易混淆字符</label>
+      <label class="wide-option"><input id="excludeAmbiguous" type="checkbox"> <span id="excludeAmbiguousText">排除易混淆字符</span></label>
     </section>
 
-    <section class="result" aria-label="生成结果">
-      <label for="password">生成的密码</label>
+    <section id="result" class="result" aria-label="生成结果">
+      <label id="passwordLabel" for="password">生成的密码</label>
       <textarea id="password" readonly rows="2"></textarea>
       <div class="actions">
         <button id="generate" type="button">重新生成</button>
@@ -42,9 +42,9 @@
       <p id="message" role="status"></p>
     </section>
 
-    <section class="history" aria-label="使用历史记录">
+    <section id="history" class="history" aria-label="使用历史记录">
       <div class="history-header">
-        <h2>使用历史</h2>
+        <h2 id="historyTitle">使用历史</h2>
         <button id="clearHistory" type="button" class="ghost">清空</button>
       </div>
       <ol id="copyHistory" class="history-list"></ol>

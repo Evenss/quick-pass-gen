@@ -6,7 +6,21 @@
   const PASSWORD_FIELD_SELECTOR = 'input[type="password"]';
   const STORAGE_KEY = 'quickPassGenConfig';
   const HISTORY_STORAGE_KEY = 'quickPassGenCopyHistory';
+  const LOCALE_STORAGE_KEY = 'quickPassGenLocale';
   const HISTORY_LIMIT = 10;
+  const LOCALES = ['zh-CN', 'en'];
+  const I18N = {
+    'zh-CN': {
+      inlineFill: '快密填充',
+      inlineFilled: '已填充',
+      noFillableInput: '未找到可填充的输入框',
+    },
+    en: {
+      inlineFill: 'Fill pass',
+      inlineFilled: 'Filled',
+      noFillableInput: 'No fillable input found',
+    },
+  };
   const DEFAULT_CONFIG = {
     length: 16,
     uppercase: true,
@@ -25,7 +39,42 @@
   const AMBIGUOUS_CHARS = new Set('O0oIl1|`\'"{}[]()/\\');
 
   let activeTarget = null;
+  let currentLocale = getBrowserLocale();
   let hideTimer;
+
+  function t(key) {
+    return I18N[currentLocale][key];
+  }
+
+  function getBrowserLocale() {
+    const browserLanguage = navigator.language || navigator.languages?.[0] || 'zh-CN';
+    return browserLanguage.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en';
+  }
+
+  function normalizeLocale(locale) {
+    return LOCALES.includes(locale) ? locale : getBrowserLocale();
+  }
+
+  function applyLocale(locale) {
+    currentLocale = normalizeLocale(locale);
+    const panel = document.querySelector('#quick-pass-gen-inline-panel');
+    if (panel?.dataset.state !== 'filled') {
+      panel.textContent = t('inlineFill');
+    }
+  }
+
+  async function loadLocale() {
+    if (!globalThis.chrome?.storage?.local) return getBrowserLocale();
+    const result = await chrome.storage.local.get(LOCALE_STORAGE_KEY);
+    return normalizeLocale(result[LOCALE_STORAGE_KEY]);
+  }
+
+  function watchLocaleChanges() {
+    globalThis.chrome?.storage?.onChanged?.addListener((changes, areaName) => {
+      if (areaName !== 'local' || !(LOCALE_STORAGE_KEY in changes)) return;
+      applyLocale(changes[LOCALE_STORAGE_KEY].newValue);
+    });
+  }
 
   function isVisible(element) {
     const style = globalThis.getComputedStyle(element);
@@ -71,7 +120,7 @@
   function fillQuickPassGenPassword(value) {
     const target = findTargetField();
     if (!target) {
-      return { success: false, message: '未找到可填充的输入框' };
+      return { success: false, message: t('noFillableInput') };
     }
 
     fillElement(target, value);
@@ -165,7 +214,7 @@
     panel = document.createElement('button');
     panel.id = 'quick-pass-gen-inline-panel';
     panel.type = 'button';
-    panel.textContent = '快密填充';
+    panel.textContent = t('inlineFill');
     panel.style.cssText = 'position:fixed;z-index:2147483647;display:none;padding:7px 10px;border:1px solid #fff;border-radius:999px;background:#050505;color:#fff;font:700 12px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.28);cursor:pointer;';
     panel.addEventListener('mousedown', (event) => event.preventDefault());
     panel.addEventListener('click', handleInlineFillClick);
@@ -201,12 +250,19 @@
     const password = generatePassword(await loadConfig());
     fillElement(target, password);
     await saveHistory(password);
-    ensurePanel().textContent = '已填充';
+    const panel = ensurePanel();
+    panel.dataset.state = 'filled';
+    panel.textContent = t('inlineFilled');
     setTimeout(() => {
-      ensurePanel().textContent = '快密填充';
-      ensurePanel().style.display = 'none';
+      const resetPanel = ensurePanel();
+      delete resetPanel.dataset.state;
+      resetPanel.textContent = t('inlineFill');
+      resetPanel.style.display = 'none';
     }, 700);
   }
+
+  loadLocale().then(applyLocale);
+  watchLocaleChanges();
 
   document.addEventListener('focusin', (event) => {
     if (event.target instanceof HTMLElement && event.target.matches(PASSWORD_FIELD_SELECTOR) && isFillable(event.target)) {
