@@ -6,7 +6,8 @@ Quick Pass Gen is a local-first Chrome random password generator extension for q
 中文说明见下方 [中文](#中文)。
 
 <img width="355" height="580" alt="image" src="https://github.com/user-attachments/assets/13b930d8-a312-4929-9813-f6d6b271a5b1" />
-
+<br>
+<img width="355" height="90" alt="image" src="https://github.com/user-attachments/assets/1382c126-d080-4c18-b222-76737689533a" />
 
 ### What it does
 
@@ -50,6 +51,8 @@ This project is licensed under the [MIT License](./LICENSE).
 快密生成器是一款本地优先的 Chrome 随机密码生成器扩展，用来快速生成强随机密码。
 
 <img width="355" height="580" alt="image" src="https://github.com/user-attachments/assets/5e536e08-ae69-464b-a863-17ef0bcf5bd3" />
+<br>
+<img width="355" height="90" alt="image" src="https://github.com/user-attachments/assets/881c61fc-a629-4175-9a6c-1f61a5e5a16d" />
 
 ### 能做什么
 
