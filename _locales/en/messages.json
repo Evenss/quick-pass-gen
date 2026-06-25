@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Quick Pass Gen",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "A simple, secure random password generator that can quickly generate and autofill passwords in web forms.",
+    "description": "Extension description"
+  }
+}

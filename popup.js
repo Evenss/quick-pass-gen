@@ -1,27 +1,111 @@
 import { DEFAULT_CONFIG, PASSWORD_LIMITS, clampLength, generatePassword, normalizeConfig } from './password.js';
 
 const fields = {
+  app: document.querySelector('#app'),
+  title: document.querySelector('#title'),
+  languageToggle: document.querySelector('#languageToggle'),
+  settings: document.querySelector('#settings'),
+  lengthLabel: document.querySelector('#lengthLabel'),
   length: document.querySelector('#length'),
   lengthValue: document.querySelector('#lengthValue'),
   uppercase: document.querySelector('#uppercase'),
+  uppercaseText: document.querySelector('#uppercaseText'),
   lowercase: document.querySelector('#lowercase'),
+  lowercaseText: document.querySelector('#lowercaseText'),
   numbers: document.querySelector('#numbers'),
+  numbersText: document.querySelector('#numbersText'),
   symbols: document.querySelector('#symbols'),
+  symbolsText: document.querySelector('#symbolsText'),
   excludeAmbiguous: document.querySelector('#excludeAmbiguous'),
+  excludeAmbiguousText: document.querySelector('#excludeAmbiguousText'),
+  result: document.querySelector('#result'),
+  passwordLabel: document.querySelector('#passwordLabel'),
   password: document.querySelector('#password'),
   generate: document.querySelector('#generate'),
   copy: document.querySelector('#copy'),
   fill: document.querySelector('#fill'),
   message: document.querySelector('#message'),
+  history: document.querySelector('#history'),
+  historyTitle: document.querySelector('#historyTitle'),
   copyHistory: document.querySelector('#copyHistory'),
   clearHistory: document.querySelector('#clearHistory'),
+  historyEmpty: document.querySelector('#historyEmpty'),
 };
 
 const STORAGE_KEY = 'quickPassGenConfig';
 const HISTORY_STORAGE_KEY = 'quickPassGenCopyHistory';
+const LOCALE_STORAGE_KEY = 'quickPassGenLocale';
 const HISTORY_LIMIT = 10;
 const SAVE_CONFIG_DELAY = 250;
+const LOCALES = ['zh-CN', 'en'];
+const I18N = {
+  'zh-CN': {
+    appTitle: '快密生成器',
+    switchLanguage: 'English',
+    switchLanguageAria: 'Switch language to English',
+    settingsLabel: '密码设置',
+    lengthLabel: '密码长度',
+    lengthValueAria: '密码长度数值',
+    uppercase: '大写字母',
+    lowercase: '小写字母',
+    numbers: '数字',
+    symbols: '特殊符号',
+    excludeAmbiguous: '排除易混淆字符',
+    resultLabel: '生成结果',
+    passwordLabel: '生成的密码',
+    generate: '重新生成',
+    copy: '复制密码',
+    historyLabel: '使用历史记录',
+    historyTitle: '使用历史',
+    clearHistory: '清空',
+    historyEmpty: '暂无使用记录',
+    keepOneType: '请至少保留一种字符类型',
+    copied: '已复制到剪贴板',
+    missingFillPage: '未找到可填充的页面',
+    autofillFailed: '自动填充失败',
+    autofillSuccess: '已自动填充到页面',
+    autofillAccessFailed: '自动填充失败，请确认当前页面允许扩展访问',
+    fillAction: '自动填充',
+    copyAction: '复制',
+    unknownFillUrl: '自动填充网址未知',
+    unknownTime: '使用时间未知',
+    historyCleared: '使用历史已清空',
+  },
+  en: {
+    appTitle: 'Quick Pass Gen',
+    switchLanguage: '中文',
+    switchLanguageAria: '切换语言为中文',
+    settingsLabel: 'Password settings',
+    lengthLabel: 'Password length',
+    lengthValueAria: 'Password length value',
+    uppercase: 'Uppercase letters',
+    lowercase: 'Lowercase letters',
+    numbers: 'Numbers',
+    symbols: 'Symbols',
+    excludeAmbiguous: 'Exclude ambiguous characters',
+    resultLabel: 'Generated result',
+    passwordLabel: 'Generated password',
+    generate: 'Regenerate',
+    copy: 'Copy password',
+    historyLabel: 'Usage history',
+    historyTitle: 'Usage history',
+    clearHistory: 'Clear',
+    historyEmpty: 'No usage history yet',
+    keepOneType: 'Keep at least one character type enabled',
+    copied: 'Copied to clipboard',
+    missingFillPage: 'No fillable page found',
+    autofillFailed: 'Autofill failed',
+    autofillSuccess: 'Autofilled on the page',
+    autofillAccessFailed: 'Autofill failed. Make sure this page allows extension access.',
+    fillAction: 'Autofill',
+    copyAction: 'Copy',
+    unknownFillUrl: 'Autofill URL unknown',
+    unknownTime: 'Usage time unknown',
+    historyCleared: 'Usage history cleared',
+  },
+};
 let currentConfig = { ...DEFAULT_CONFIG };
+let currentLocale = getBrowserLocale();
 let saveConfigTimer;
 let hasUserEditedConfig = false;
 let copyHistory = [];
@@ -30,13 +114,16 @@ init();
 
 function init() {
   renderConfig(currentConfig);
+  applyLocale(currentLocale);
   bindEvents();
   refreshPassword();
+  loadStoredLocaleAfterFirstPaint();
   loadStoredConfigAfterFirstPaint();
   loadStoredHistoryAfterFirstPaint();
 }
 
 function bindEvents() {
+  fields.languageToggle.addEventListener('click', toggleLanguage);
   fields.length.addEventListener('input', handleRangeLengthInput);
   fields.lengthValue.addEventListener('input', handleNumberLengthInput);
   fields.lengthValue.addEventListener('change', handleNumberLengthCommit);
@@ -49,6 +136,52 @@ function bindEvents() {
   fields.fill?.addEventListener('click', fillPassword);
   fields.clearHistory.addEventListener('click', clearCopyHistory);
   fields.password.addEventListener('focus', () => fields.password.select());
+}
+
+function t(key) {
+  return I18N[currentLocale][key];
+}
+
+function getBrowserLocale() {
+  const browserLanguage = navigator.language || navigator.languages?.[0] || 'zh-CN';
+  return browserLanguage.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en';
+}
+
+function normalizeLocale(locale) {
+  return LOCALES.includes(locale) ? locale : getBrowserLocale();
+}
+
+function applyLocale(locale) {
+  currentLocale = normalizeLocale(locale);
+  document.documentElement.lang = currentLocale;
+  document.title = t('appTitle');
+  fields.app.setAttribute('aria-label', t('appTitle'));
+  fields.title.textContent = t('appTitle');
+  fields.languageToggle.textContent = t('switchLanguage');
+  fields.languageToggle.setAttribute('aria-label', t('switchLanguageAria'));
+  fields.settings.setAttribute('aria-label', t('settingsLabel'));
+  fields.lengthLabel.textContent = t('lengthLabel');
+  fields.lengthValue.setAttribute('aria-label', t('lengthValueAria'));
+  fields.uppercaseText.textContent = t('uppercase');
+  fields.lowercaseText.textContent = t('lowercase');
+  fields.numbersText.textContent = t('numbers');
+  fields.symbolsText.textContent = t('symbols');
+  fields.excludeAmbiguousText.textContent = t('excludeAmbiguous');
+  fields.result.setAttribute('aria-label', t('resultLabel'));
+  fields.passwordLabel.textContent = t('passwordLabel');
+  fields.generate.textContent = t('generate');
+  fields.copy.textContent = t('copy');
+  fields.history.setAttribute('aria-label', t('historyLabel'));
+  fields.historyTitle.textContent = t('historyTitle');
+  fields.clearHistory.textContent = t('clearHistory');
+  fields.historyEmpty.textContent = t('historyEmpty');
+  renderCopyHistory();
+}
+
+async function toggleLanguage() {
+  const nextLocale = currentLocale === 'zh-CN' ? 'en' : 'zh-CN';
+  applyLocale(nextLocale);
+  await saveLocale(nextLocale);
 }
 
 function handleRangeLengthInput() {
@@ -96,7 +229,7 @@ function handleConfigChange() {
   if (!hasActiveType(currentConfig)) {
     currentConfig[this.id] = true;
     renderConfig(currentConfig);
-    showMessage('请至少保留一种字符类型');
+    showMessage(t('keepOneType'));
     return;
   }
 
@@ -121,7 +254,7 @@ async function copyPassword() {
   if (!password) return;
   await navigator.clipboard.writeText(password);
   await addHistoryItem(password, 'copy');
-  showMessage('已复制到剪贴板');
+  showMessage(t('copied'));
 }
 
 async function fillPassword() {
@@ -131,7 +264,7 @@ async function fillPassword() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) {
-      showMessage('未找到可填充的页面');
+      showMessage(t('missingFillPage'));
       return;
     }
 
@@ -147,15 +280,15 @@ async function fillPassword() {
     });
 
     if (!fillResult?.success) {
-      showMessage(fillResult?.message ?? '自动填充失败');
+      showMessage(fillResult?.message ?? t('autofillFailed'));
       return;
     }
 
     await addHistoryItem(password, 'fill', tab.url);
-    showMessage('已自动填充到页面');
+    showMessage(t('autofillSuccess'));
   } catch (error) {
     console.error('Failed to autofill quick-pass-gen password:', error);
-    showMessage('自动填充失败，请确认当前页面允许扩展访问');
+    showMessage(t('autofillAccessFailed'));
   }
 }
 
@@ -195,18 +328,18 @@ function renderCopyHistory() {
 }
 
 function formatHistoryAction(action) {
-  return action === 'fill' ? '自动填充' : '复制';
+  return action === 'fill' ? t('fillAction') : t('copyAction');
 }
 
 function formatHistoryUrl(item) {
   if (item.action !== 'fill') return '';
-  return item.url || '自动填充网址未知';
+  return item.url || t('unknownFillUrl');
 }
 
 function formatHistoryTime(value) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '使用时间未知';
-  return date.toLocaleString('zh-CN', {
+  if (Number.isNaN(date.getTime())) return t('unknownTime');
+  return date.toLocaleString(currentLocale, {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
@@ -224,7 +357,24 @@ async function clearCopyHistory() {
   copyHistory = [];
   renderCopyHistory();
   await saveCopyHistory(copyHistory);
-  showMessage('使用历史已清空');
+  showMessage(t('historyCleared'));
+}
+
+function loadStoredLocaleAfterFirstPaint() {
+  requestAfterFirstPaint(async () => {
+    applyLocale(await loadLocale());
+  });
+}
+
+async function loadLocale() {
+  if (!globalThis.chrome?.storage?.local) return getBrowserLocale();
+  const result = await chrome.storage.local.get(LOCALE_STORAGE_KEY);
+  return normalizeLocale(result[LOCALE_STORAGE_KEY]);
+}
+
+async function saveLocale(locale) {
+  if (!globalThis.chrome?.storage?.local) return;
+  await chrome.storage.local.set({ [LOCALE_STORAGE_KEY]: normalizeLocale(locale) });
 }
 
 function loadStoredHistoryAfterFirstPaint() {
@@ -309,7 +459,7 @@ function requestAfterFirstPaint(callback) {
   afterNextFrame(() => {
     const run = () => {
       callback().catch((error) => {
-        console.error('Failed to load quick-pass-gen config:', error);
+        console.error('Failed to load quick-pass-gen data:', error);
       });
     };
 

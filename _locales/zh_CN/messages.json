@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "快密生成器",
+    "description": "扩展名称"
+  },
+  "extensionDescription": {
+    "message": "一款简洁安全的随机密码生成器，支持在网页表单中快速生成并自动填充。",
+    "description": "扩展描述"
+  }
+}
