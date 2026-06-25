@@ -121,7 +121,7 @@ button.ghost {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.history-url {
+.history-site {
   overflow: hidden;
   color: #a3a3a3;
   font-size: 11px;
