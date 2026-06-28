@@ -1,6 +1,6 @@
 {
   "name": "quick-pass-gen",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "快密生成器 Chrome 扩展",
   "type": "module",
   "scripts": {
