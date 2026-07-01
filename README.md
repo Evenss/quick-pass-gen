@@ -18,7 +18,13 @@ Quick Pass Gen is a local-first Chrome random password generator extension for q
 - Copy the generated password with one click.
 - Save recent usage history locally so you can recover recently copied or filled passwords; autofill history records only the site domain, not the full URL or page content, and no data is uploaded.
 
-### Load in Google Chrome
+### Install from Chrome Web Store
+
+For regular use, install Quick Pass Gen directly from the Chrome Web Store:
+
+[Quick Pass Gen on Chrome Web Store](https://chromewebstore.google.com/detail/cjopmdmbneimmigedpadobbgjcdnnplk)
+
+### Load in Google Chrome for development
 
 1. Download or clone this project locally.
 2. Open Chrome and go to `chrome://extensions/`.
@@ -64,7 +70,13 @@ This project is licensed under the [MIT License](./LICENSE).
 - 可在本地保存最近使用历史，方便找回近期复制或填充过的密码；自动填充历史只记录网站域名，不保存完整 URL 或页面内容，也不会上传任何数据。
 
 
-### 加载到 Google Chrome
+### 从 Chrome Web Store 安装
+
+日常使用请直接从 Chrome Web Store 安装快密生成器：
+
+[快密生成器 - Chrome Web Store](https://chromewebstore.google.com/detail/cjopmdmbneimmigedpadobbgjcdnnplk)
+
+### 开发时加载到 Google Chrome
 
 1. 下载或克隆本项目到本地。
 2. 打开 Chrome，进入 `chrome://extensions/`。
